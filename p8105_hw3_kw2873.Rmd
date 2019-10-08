@@ -1,0 +1,63 @@
+---
+title: "Untitled"
+author: "Keyi Wang"
+date: "10/7/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+library(p8105.datasets)
+
+```
+
+
+```{r, include=FALSE}
+ data("instacart")
+```
+How many aisles are there, and which aisles are the most items ordered from?
+```{r}
+## there are 134 different aisles id
+instacart %>%
+select(aisle_id) %>%
+  distinct() %>%
+  summarize((n_obs = n())) 
+
+## the most popular aisle is aisle 83 which has been ordered 150609 times
+instacart %>%
+select(aisle_id) %>%
+  count(aisle_id) %>%
+mutate(
+  number_of_aisle = n
+) %>%
+  arrange(desc(number_of_aisle)) 
+```
+
+Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+```{r}
+instacart %>%
+select(aisle_id) %>%
+  count(aisle_id) %>%
+mutate(
+   aisle_id = factor(aisle_id),
+   number_of_aisle = n
+) %>%
+  filter(number_of_aisle > 10000) %>%
+ ggplot(aes(x = aisle_id, y = number_of_aisle,color = aisle_id )) +
+  geom_point() +
+  labs(
+    title = "Plot of Aisles Ordered More Than 10000 Items",
+    x = "Aisle ID",
+    y = "Number of Items Ordered"
+  ) +
+   viridis::scale_color_viridis(
+    name = "Aisle ID", 
+    discrete = TRUE
+  ) +
+   theme(legend.position = "bottom")
+
+```
+
+
