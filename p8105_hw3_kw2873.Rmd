@@ -59,5 +59,50 @@ mutate(
    theme(legend.position = "bottom")
 
 ```
+Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
+```{r}
+##generating dataset for packaged vegetables fruits with top3 items
+pvf =
+instacart %>%
+  filter(aisle == "packaged vegetables fruits" )  %>%
+  select(aisle, product_name) %>%
+  count(aisle, product_name) %>%
+  arrange(desc(n))  %>%
+  filter(n > 4059) 
+
+##generating dataset for dog food care with top 3 items
+dfc = 
+instacart %>%
+ filter(aisle == "dog food care")%>%
+ select(aisle, product_name) %>%
+  count(aisle, product_name) %>%
+  arrange(desc(n)) %>%
+ filter(n > 25) 
+
+##generating dataset for baking ingredients with top 3 items
+bi =
+instacart %>%
+ filter(aisle == "baking ingredients")%>%
+  select(aisle, product_name) %>%
+  count(aisle, product_name) %>%
+  arrange(desc(n)) %>%
+ filter(n > 329)
+
+table1 =
+bind_rows(pvf,dfc,bi) %>%
+knitr::kable()
+table1 
+ 
+  
+ 
+
+
+
+
+
+  
+
+
+```
 
 
