@@ -88,20 +88,86 @@ instacart %>%
   arrange(desc(n)) %>%
  filter(n > 329)
 
+## combining above dataset to make the desired table
 table1 =
 bind_rows(pvf,dfc,bi) %>%
 knitr::kable()
 table1 
+```
+Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+```{r}
+## manipulation for cream dataset
+cream =
+instacart %>%
+  select(order_dow,order_hour_of_day,product_name,) %>%
+ filter(product_name == "Coffee Ice Cream") %>%
+  arrange(order_dow)%>%
+  mutate(
+    mean_0 = mean(order_hour_of_day[order_dow ==0]),
+     mean_1 = mean(order_hour_of_day[order_dow ==1]),
+     mean_2 = mean(order_hour_of_day[order_dow ==2]),
+     mean_3 = mean(order_hour_of_day[order_dow ==3]),
+     mean_4 = mean(order_hour_of_day[order_dow ==4]),
+     mean_5 = mean(order_hour_of_day[order_dow ==5]),
+     mean_6 = mean(order_hour_of_day[order_dow ==6])
+  ) %>%
+  select(-order_hour_of_day) %>%
+  distinct() %>%
+  mutate(
+    mean_hour_of_the_day = c(13.8,14.3,15.4,15.3,15.2,12.3,13.8)
+  ) %>%
+ select(product_name,order_dow,mean_hour_of_the_day) %>% 
+  pivot_wider(
+    names_from = order_dow,
+    values_from= mean_hour_of_the_day
+  )%>%
+rename( Sun ="0" ,
+        Mon = "1",
+        Tue = "2",
+        Wed = "3",
+        Thur = "4",
+        Fri = "5" ,
+        Sat = "6"
+        )
+## manipulation for apple dataset
+apple=
+instacart %>%
+  select(order_dow,order_hour_of_day,product_name,) %>%
+ filter(product_name == "Pink Lady Apples") %>%
+  arrange(order_dow)%>%
+  mutate(
+    mean_0 = mean(order_hour_of_day[order_dow ==0]),
+     mean_1 = mean(order_hour_of_day[order_dow ==1]),
+     mean_2 = mean(order_hour_of_day[order_dow ==2]),
+     mean_3 = mean(order_hour_of_day[order_dow ==3]),
+     mean_4 = mean(order_hour_of_day[order_dow ==4]),
+     mean_5 = mean(order_hour_of_day[order_dow ==5]),
+     mean_6 = mean(order_hour_of_day[order_dow ==6])
+  ) %>%
+  select(-order_hour_of_day) %>%
+  distinct() %>%
+  mutate(
+    mean_hour_of_the_day = c(13.4,11.4,11.7,14.3,11.6,12.8,12.0)
+  ) %>%
+ select(product_name,order_dow,mean_hour_of_the_day) %>% 
+    pivot_wider(
+    names_from = order_dow,
+    values_from = mean_hour_of_the_day
+  )%>% 
+rename( Sun ="0" ,
+        Mon = "1",
+        Tue = "2",
+        Wed = "3",
+        Thur = "4",
+        Fri = "5" ,
+        Sat = "6"
+        )
+## combining above dataset
+table2 =
+bind_rows(apple,cream) %>%
+knitr::kable()
+table2
  
-  
- 
-
-
-
-
-
-  
-
 
 ```
 
