@@ -97,7 +97,9 @@ bind_rows(pvf,dfc,bi) %>%
 knitr::kable()
 table1 
 ```
+
 Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
 ```{r}
 instacart %>%
   select(order_dow,order_hour_of_day,product_name,) %>%
@@ -126,9 +128,15 @@ focus on the “Overall Health” topic
 include only responses from “Excellent” to “Poor”
 organize responses as a factor taking levels ordered from “Poor” to “Excellent”
 ```{r}
-### arrange response data based on topic(Overall Health) from poor to excellent
-brfss_smart2010 %>%
+## clean and change variable
+brfss = 
+  brfss_smart2010 %>%
   janitor::clean_names() %>%
+  rename( state = "locationabbr",
+        location = "locationdesc"
+        )
+### arrange response data based on topic(Overall Health) from poor to excellent
+brfss %>%
   filter(topic == "Overall Health"|response == "Excellent"|response == "Very good"
          |response == "Good"|response == "Fair"|response == "Poor")  %>%
   select(topic,response) %>%
@@ -140,11 +148,7 @@ arrange(response)
 In 2002, which states were observed at 7 or more locations? What about in 2010?
 ```{r}
 ## data manipulation to know which states were observed 7 or more locations in 2002
-brfss_smart2010 %>%
-janitor::clean_names() %>%
-rename( state = "locationabbr" ,
-        location = "locationdesc"
-        ) %>%
+brfss %>%
 filter(year == "2002") %>%
   select(year,state,location) %>%
   group_by(state,location) %>%
@@ -155,11 +159,7 @@ filter(year == "2002") %>%
   filter(n_obs >= 7)
 
 ## data manipulation to know which states were observed 7 or more locations in 2010
-brfss_smart2010 %>%
-janitor::clean_names() %>%
-rename( state = "locationabbr" ,
-        location = "locationdesc"
-        ) %>%
+brfss %>%
 filter(year == "2010") %>%
   select(year,state,location) %>%
   group_by(state,location) %>%
@@ -168,11 +168,32 @@ filter(year == "2010") %>%
   group_by(state) %>% 
   summarize(n_obs = n()) %>%
   filter(n_obs >= 7)
+```
 
+Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state. Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years – the geom_line geometry and group aesthetic will help).
+
+```{r}
+brfss %>%
+  filter(response == "Excellent")  %>%
+  select(year,state,location,data_value) %>%
+  drop_na() %>%
+  group_by(year,state) %>%
+  summarize(ave_within_state_overtime = mean(data_value)) %>%
+  ggplot(aes(x = year,y = ave_within_state_overtime,color = state))+
+  geom_line(alpha = 0.5) +
+  labs(
+    title = " Plot of Average Data Value Over Time Within a State ",
+    x = "Year",
+    y = " BRFSS Data Value Within State From 2002 to 2010",
+    caption = "Data from BRFSS "
+  )+
+  theme(legend.position = "bottom")
+
+  
 
   
 
 
-```
 
+```
 
