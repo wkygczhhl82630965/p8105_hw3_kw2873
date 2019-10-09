@@ -182,7 +182,7 @@ brfss %>%
   group_by(year,state) %>%
   summarize(ave_within_state_overtime = mean(data_value)) %>%
   ggplot(aes(x = year,y = ave_within_state_overtime,color = state)) +
-  geom_line() %>%
+  geom_line() +
   labs(
     title = " Plot of Average Data Value Over Time Within a State ",
     x = "Year",
