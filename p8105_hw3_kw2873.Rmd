@@ -196,24 +196,24 @@ brfss %>%
 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
 ```{r}
-## boxplot
-brfss %>%
-select (year, state,location,response,data_value)  %>%
-filter (response %in% c("Excellent","Very good","Good","Fair","Poor"),
-        year %in% c("2006","2010"),state  %in%  c("NY")) %>%
-  group_by(location)%>%
-ggplot(aes(x = response,y = data_value,color = location))+ geom_boxplot()+ facet_grid(~year)
-  
- ## distribution plot 
-  brfss %>% 
-  filter(year == 2006 | year == 2010) %>% 
-  filter(state == "NY") %>%
-  group_by(response) %>% 
+ brfss %>% 
+  filter(year == "2006" | year == "2010") %>% 
+  filter(state == "NY") %>% 
+  group_by(response) %>%  
   ggplot(aes(x = data_value, fill = response)) +
-  #geom_density_ridges(scale = .85) #+
-  #geom_histogram() +
-  geom_density(alpha = .4, adjust = .5, color = "blue") +
-  facet_grid(year ~ response)
+  # set transparency
+  geom_density(alpha = 0.5) +
+  # create a two panel plot for responses among locations in NY State
+  facet_grid(year ~ response) +
+  # add title, labels for x- and y- labels and caption
+  labs(
+    title = "Two Panel Plot for Responses among Locations in NY State",
+    x = "Data Value",
+    y = "Density"
+  )
+
+
+
 
 ```
 
@@ -221,11 +221,9 @@ ggplot(aes(x = response,y = data_value,color = location))+ geom_boxplot()+ facet
 Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
 ```{r}
 accel_data = read_csv(file = "./data/accel_data.csv")
-
 tidy_accel_data = 
 accel_data %>%
 janitor::clean_names() %>%
-rename(nth_day = "day_id") %>%
 pivot_longer(
   activity_1:activity_1440, ## choose the column you want to combine
   names_to = "nth_minute",  ###name the new-made column
@@ -233,24 +231,57 @@ pivot_longer(
   values_to = "activity" 
   ) %>% 
   mutate(
-    day_1 = day,
-    day_1 = recode(day, "Monday" = "1" ,"Tuesday" = "2", "Wednesday" = "3", "Thursday" = "4", "Friday" = "5", "Saturday" = "6", "Sunday" = "7"),
- weekday_weekend = case_when(   ## "case when" is helpful when you want to create one variable based on two or more levels 
-      day_1 <= 5 ~ "weekday",
-      day_1 >5 ~ "weekend",
-      TRUE     ~" " ## blank for anything that doesn't satisfy the above situation
-    )) %>% 
-  select(-day_1)
+    week = as.factor(week),
+    nth_minute = as.numeric(nth_minute),
+    day_id = as.integer(day_id),
+    day = forcats::fct_relevel(day,c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))) %>% 
+    arrange(day) %>% 
+    mutate(weekday_weekend = case_when(
+    day %in% c("Monday","Tuesday","Wednesday","Thursday","Friday")~ "weekday",
+    day %in% c("Saturday","Sunday")~ "weekend",
+    TRUE     ~ ""
+  )) 
+
 ```
 Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
 
 ```{r}
 tidy_accel_data %>%
-  group_by(nth_day,weekday_weekend) %>%
+  group_by(week, day,weekday_weekend) %>%
   summarize(
     total_activity = sum(activity)
   ) %>% 
  knitr::kable()
+
+### since it is not very easy for us to find an exact trend in a 
+### table, I decided to it into a plot.
+  table_data =
+  tidy_accel_data %>%
+  group_by(week, day) %>%
+  summarize(
+    sum_of_day = sum(activity)
+  )  %>%
+    ungroup(week,day)%>%
+    mutate(
+      day_number  =  row_number()
+    )
+  
+table_data %>%
+  ggplot(aes(x = day_number, y = sum_of_day)) +
+  geom_point(aes(color = day_number), alpha = 0.5) +
+  geom_line(aes(color = day_number)) +
+  # add title, labels for x- and y- axis and caption
+  labs(
+    title = "Trend Plot for Activity Across 35 days ",
+    x = "Days",
+    y = "Total Activity Counts for Each Day",
+    caption = "Data from the Advanced Cardiac Care Center of Columbia University Medical Center"
+  ) +
+  scale_y_continuous(
+    # make the y-axis labels a bit prettier
+    breaks = c(0, 200000, 400000, 600000, 800000),
+    labels = c("0", "200000", "400000", "600000", "800000")
+    )
 
 ```
 
@@ -258,6 +289,28 @@ tidy_accel_data %>%
 Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
 
 ```{r}
+tidy_accel_data %>% 
+  group_by(day) %>% 
+  mutate(
+  hour_per_day = ceiling(nth_minute/60)) %>% 
+  group_by(day, hour_per_day) %>% 
+  summarize(sum_by_hour = sum(activity)) %>% 
+  ggplot(aes(x = hour_per_day, y = sum_by_hour)) +
+  geom_point(aes(color = day)) +
+  geom_line(aes(color = day)) +
+  labs(
+    title = "Plot for 24-hour Activity Time Courses for Each Day",
+    x = "Hour in a Day",
+    y = "Total Activity for Each Hour"
+    ) +
+    scale_y_continuous(
+    breaks = c(0, 100000, 200000, 300000),
+    labels = c("0", "100000", "200000", "300000")
+  ) +
+    scale_x_continuous(
+    breaks = c(0, 4, 8, 12, 16, 20, 24),
+    labels = c("0", "4", "8", "12", "16", "20", "24"))
+  
 
  
 
