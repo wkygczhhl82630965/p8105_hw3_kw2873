@@ -12,6 +12,23 @@ library(patchwork)
 library(p8105.datasets)
 library(httr)
 library(jsonlite)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  fig.width = 8,
+  fig.height = 6, 
+  out.width = "90%"
+)
+
+
+options(
+  ggplot2.countinuous.colour = "viridis",
+  ggplot2.countinuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
 
@@ -29,6 +46,21 @@ select(aisle_id) %>%
   summarize((n_obs = n())) 
 
 ## the most popular aisle is aisle 83 which has been ordered 150609 times
+instacart %>%
+  group_by(aisle) %>%
+  count(aisle_id) %>%
+mutate(
+  number_of_item = n
+) %>%
+  select(-n)%>%
+  arrange(desc(number_of_item)) 
+```
+
+Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
+
+```{r}
+##plot showing the number of items ordered in ecah aisle from 
+## the least popular to most popular aisles
 cart_1 = instacart %>%
 select(aisle_id) %>%
   count(aisle_id) %>%
@@ -36,13 +68,9 @@ mutate(
   number_of_item = n
 ) %>%
   arrange(desc(number_of_item)) 
-```
 
-Make a plot that shows the number of items ordered in each aisle, limiting this to aisles with more than 10000 items ordered. Arrange aisles sensibly, and organize your plot so others can read it.
-
-```{r}
 cart_1 %>%
-  filter(number_of_item >10000)%>%
+  filter(number_of_item > 10000) %>%
   mutate(
    aisle_id = factor(aisle_id),
   aisle_id = forcats::fct_reorder(aisle_id, number_of_item )) %>%
@@ -63,38 +91,14 @@ cart_1 %>%
 
 Make a table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”. Include the number of times each item is ordered in your table.
 ```{r}
-##generating dataset for packaged vegetables fruits with top3 items
-pvf =
-instacart %>%
-  filter(aisle == "packaged vegetables fruits" )  %>%
-  select(aisle, product_name) %>%
-  count(aisle, product_name) %>%
-  arrange(desc(n))  %>%
-  filter(n > 4059) 
-
-##generating dataset for dog food care with top 3 items
-dfc = 
-instacart %>%
- filter(aisle == "dog food care")%>%
- select(aisle, product_name) %>%
-  count(aisle, product_name) %>%
-  arrange(desc(n)) %>%
- filter(n > 25) 
-
-##generating dataset for baking ingredients with top 3 items
-bi =
-instacart %>%
- filter(aisle == "baking ingredients")%>%
-  select(aisle, product_name) %>%
-  count(aisle, product_name) %>%
-  arrange(desc(n)) %>%
- filter(n > 329)
-
-## combining above dataset to make the desired table
-table1 =
-bind_rows(pvf,dfc,bi) %>%
-knitr::kable()
-table1 
+item_table = instacart %>% 
+  group_by(aisle, product_name) %>% 
+  filter(aisle == "baking ingredients" | aisle == "dog food care" |  aisle == "packaged vegetables fruits") %>% 
+  summarize(number_sale = n()) %>% 
+  filter(min_rank(desc(number_sale)) < 4) %>% 
+  arrange(desc(number_sale)) %>% 
+  knitr::kable()
+item_table
 ```
 
 Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
@@ -117,7 +121,9 @@ instacart %>%
         Thur = "4",
         Fri = "5" ,
         Sat = "6"
-        )
+        )%>%
+knitr::kable(digit = 1)
+
 
 ```
 
@@ -203,11 +209,8 @@ arrange(response)%>%
   filter(state == "NY") %>% 
   group_by(response) %>%  
   ggplot(aes(x = data_value, fill = response)) +
-  # set transparency
   geom_density(alpha = 0.5) +
-  # create a two panel plot for responses among locations in NY State
   facet_grid(year ~ response) +
-  # add title, labels for x- and y- labels and caption
   labs(
     title = "Two Panel Plot for Responses among Locations in NY State",
     x = "Data Value",
@@ -227,8 +230,8 @@ tidy_accel_data =
 accel_data %>%
 janitor::clean_names() %>%
 pivot_longer(
-  activity_1:activity_1440, ## choose the column you want to combine
-  names_to = "nth_minute",  ###name the new-made column
+  activity_1:activity_1440,
+  names_to = "nth_minute", 
   names_prefix = "activity_",
   values_to = "activity" 
   ) %>% 
@@ -272,7 +275,6 @@ table_data %>%
   ggplot(aes(x = day_number, y = sum_of_day)) +
   geom_point(aes(color = day_number), alpha = 0.5) +
   geom_line(aes(color = day_number)) +
-  # add title, labels for x- and y- axis and caption
   labs(
     title = "Trend Plot for Activity Across 35 days ",
     x = "Days",
@@ -280,7 +282,6 @@ table_data %>%
     caption = "Data from the Advanced Cardiac Care Center of Columbia University Medical Center"
   ) +
   scale_y_continuous(
-    # make the y-axis labels a bit prettier
     breaks = c(0, 200000, 400000, 600000, 800000),
     labels = c("0", "200000", "400000", "600000", "800000")
     )
@@ -294,6 +295,7 @@ Accelerometer data allows the inspection activity over the course of the day. Ma
 tidy_accel_data %>% 
   group_by(day) %>% 
   mutate(
+  ### cahnging min into hour using rounding
   hour_per_day = ceiling(nth_minute/60)) %>% 
   group_by(day, hour_per_day) %>% 
   summarize(sum_by_hour = sum(activity)) %>% 
