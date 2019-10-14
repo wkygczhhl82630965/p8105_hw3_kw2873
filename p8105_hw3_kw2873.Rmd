@@ -217,7 +217,7 @@ brfss %>%
   labs(
     title = " Plot of Average Data Value Over Time Within a State ",
     x = "Year",
-    y = " BRFSS Data Value Within State From 2002 to 2010",
+    y = " BRFSS Data Value From 2002 to 2010",
     caption = "Data from BRFSS "
   )
 ```
