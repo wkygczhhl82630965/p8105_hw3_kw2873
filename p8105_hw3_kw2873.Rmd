@@ -123,10 +123,10 @@ instacart %>%
         Sat = "6"
         )%>%
 knitr::kable(digit = 1)
-
 ```
-Short description of the dataset:
 
+
+Short description of the dataset:
 This dataset contains information about online grocery orders from more than 200,000 Instacart users and there are `r count(instacart)` observations of 131209 customers in the year of 2017, where each row in the dataset is a product from an order. 
 There are total 15 variables:
 * order_id: order identifier
@@ -150,6 +150,7 @@ While doing data manipulation, I found the item_table I made most useful as We c
 
 
 ##problem2
+
 format the data to use appropriate variable names;
 focus on the “Overall Health” topic
 include only responses from “Excellent” to “Poor”
@@ -197,7 +198,7 @@ filter(year == "2010") %>%
   summarize(n_obs = n()) %>%
   filter(n_obs >= 7)
 ```
-answer to above questions:
+Aswer to above questions:
 In 2002, the states that were observed at 7 or more locations are Connecticut, Florida, Massachusetts, North Carolina, New Jersey, Pennsylvania.
 In 2010, the states that were observed at 7 or more locations are California, Colorado, Florida, Massachusetts, Maryland, North Carolina, Nebraska, New Jersey, New York, Ohio, Pannsylvania, South Carolina, Texas, Washington.
 
@@ -220,7 +221,9 @@ brfss %>%
     caption = "Data from BRFSS "
   )
 ```
+
 The average data value for each state across its locations(counties) from 2002 to 2010 is relatively stable (which means there is no big change/jump through this period of time).
+
 
 Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
@@ -244,10 +247,10 @@ arrange(response)%>%
     y = "Density"
   )
 
-
-
-
 ```
+Within the state of NY, the distributions of each response given the same response is mostly similar between the year of 2006 and 2010. The Fair response differed a little, but it is not terribly different. 
+
+
 
 
 Load, tidy, and otherwise wrangle the data. Your final dataset should include all originally observed variables and values; have useful variable names; include a weekday vs weekend variable; and encode data with reasonable variable classes. Describe the resulting dataset (e.g. what variables exist, how many observations, etc).
@@ -316,6 +319,18 @@ table_data %>%
 ```
 
 
+This dataset is called accel_data which  uses five weeks of accelerometer data collected on a 63 year-old male with BMI 25, who was admitted to the Advanced Cardiac Care Center of Columbia University Medical Center and diagnosed with congestive heart failure (CHF).
+
+The variables are:
+
+* week: the number of the week of this man's data record
+* day_id: the number of the day of this man's data record
+* day: the day of week of this man's data record
+* minute_in_a_day: the minute of a day of this man's data record
+* activity_count: the activity counts for each minute of a 24-hour day starting at midnight for this man's data record
+* weekday: to indicate whether it is a weekday or a weekend for this man's data record
+
+
 Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
 
 ```{r}
@@ -337,14 +352,11 @@ tidy_accel_data %>%
     scale_y_continuous(
     breaks = c(0, 100000, 200000, 300000),
     labels = c("0", "100000", "200000", "300000")
-  ) +
+  )+
     scale_x_continuous(
     breaks = c(0, 4, 8, 12, 16, 20, 24),
     labels = c("0", "4", "8", "12", "16", "20", "24"))
-  
-
- 
 
 ```
-
+According to the plot above, we can see that the man is inactive during 0AM - 8AM, and then maintained a stable level of activeness for the rest of day from 8AM to 8PM. However, he moved around a lot at Friday nights and Sunday mornings relatively. Then his activity counts gradually decreased after 8PM.
 
