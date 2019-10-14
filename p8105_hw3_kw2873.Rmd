@@ -337,9 +337,9 @@ Accelerometer data allows the inspection activity over the course of the day. Ma
 tidy_accel_data %>% 
   group_by(day) %>% 
   mutate(
-  ### cahnging min into hour using rounding
   hour_per_day = ceiling(nth_minute/60)) %>% 
-  group_by(day, hour_per_day) %>% 
+  ## sum up one-hour activity
+  group_by(day_id,day, hour_per_day) %>% 
   summarize(sum_by_hour = sum(activity)) %>% 
   ggplot(aes(x = hour_per_day, y = sum_by_hour)) +
   geom_point(aes(color = day)) +
@@ -357,6 +357,10 @@ tidy_accel_data %>%
     breaks = c(0, 4, 8, 12, 16, 20, 24),
     labels = c("0", "4", "8", "12", "16", "20", "24"))
 
+
+
 ```
+
+By summing up the each one- hour actvity, I create a plot showing the trend of activity within 35 days based on 24-hour time course. 
 According to the plot above, we can see that the man is inactive during 0AM - 8AM, and then maintained a stable level of activeness for the rest of day from 8AM to 8PM. However, he moved around a lot at Friday nights and Sunday mornings relatively. Then his activity counts gradually decreased after 8PM.
 
